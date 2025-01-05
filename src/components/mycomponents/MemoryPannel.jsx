@@ -124,7 +124,7 @@ export function MemoryPanel() {
   return (
     <div className="p-4 bg-background rounded-lg border">
       <div className="flex items-center gap-4 mb-4">
-        <div className="flex-2">
+        <div className="flex-3">
           <Input
             type="text"
             placeholder="Enter address (hex with 'h' suffix or decimal)"

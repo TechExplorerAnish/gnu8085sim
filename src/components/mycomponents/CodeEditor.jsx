@@ -7,6 +7,7 @@ import {
   TooltipTrigger,
   TooltipProvider,
 } from "@/components/ui/tooltip";
+import { Input } from "@/components/ui/input"
 import { InfoIcon } from "lucide-react";
 import { useState, useRef } from "react";
 
@@ -56,10 +57,10 @@ export function CodeEditor() {
                   </TooltipContent>
                 </Tooltip>
               </div>
-              <input
+              <Input
                 id="loadAt"
                 type="text"
-                className="w-32 px-4 py-2  font-mono rounded-md border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-800 text-slate-700 dark:text-slate-200 focus:border-slate-300 dark:focus:border-gray-600 transition-all"
+                className=" px-4 py-2  font-mono rounded-md border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-800 text-slate-700 dark:text-slate-200 focus:border-slate-300 dark:focus:border-gray-600 transition-all"
                 placeholder="Enter address..."
               />
             </div>
@@ -70,7 +71,9 @@ export function CodeEditor() {
             className="relative flex rounded-lg border border-slate-200 dark:border-gray-700"
             style={{ height }}
           >
-            {/* Line Numbers */}
+
+            {             /* Line Numbers */             }
+
             <div
               ref={lineNumbersRef}
               className="flex-none w-12 overflow-y-auto bg-slate-50 dark:bg-gray-800 border-r border-slate-200 dark:border-gray-700"
