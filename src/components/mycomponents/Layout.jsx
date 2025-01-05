@@ -17,7 +17,7 @@ import AssemblerMessage from "./AssemblerMessage";
 import FlagPanel  from "./FlagPanel"
 
 export default function Layout() {
-  const [theme, setTheme] = useState("light");
+  const [theme, setTheme] = useState("dark");
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
 
