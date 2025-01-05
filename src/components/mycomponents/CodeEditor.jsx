@@ -1,4 +1,6 @@
-import  { useState, useRef, useEffect } from 'react';
+/** @format */
+
+import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Tooltip,
@@ -10,57 +12,142 @@ import { Input } from "@/components/ui/input";
 import { InfoIcon } from "lucide-react";
 
 // Define syntax highlighting rules
-const opcodes = ['jmp', 'hlt', 'nop', 'mov', 'add', 'sub', 'push', 'pop'];
-const registers = ['a', 'b', 'c', 'd', 'e', 'h', 'l', 'sp', 'pc', 'psw'];
+const opcodes = [
+  "aci",
+  "adc",
+  "add",
+  "adi",
+  "ana",
+  "ani",
+  "call",
+  "cc",
+  "cm",
+  "cma",
+  "cmc",
+  "cmp",
+  "cnc",
+  "cnz",
+  "cp",
+  "cpe",
+  "cpi",
+  "cpo",
+  "cz",
+  "daa",
+  "dad",
+  "dcr",
+  "dcx",
+  "di",
+  "ei",
+  "hlt",
+  "in",
+  "inr",
+  "inx",
+  "jc",
+  "jm",
+  "jmp",
+  "jnc",
+  "jnz",
+  "jp",
+  "jpe",
+  "jpo",
+  "jz",
+  "lda",
+  "ldax",
+  "lhld",
+  "lxi",
+  "mov",
+  "mvi",
+  "nop",
+  "ora",
+  "ori",
+  "out",
+  "pchl",
+  "pop",
+  "push",
+  "ral",
+  "rar",
+  "rc",
+  "ret",
+  "rim",
+  "rlc",
+  "rm",
+  "rnc",
+  "rnz",
+  "rp",
+  "rpe",
+  "rpo",
+  "rrc",
+  "rst",
+  "rz",
+  "sbb",
+  "sbi",
+  "shld",
+  "sim",
+  "sphl",
+  "sta",
+  "stax",
+  "stc",
+  "sub",
+  "sui",
+  "xchg",
+  "xra",
+  "xri",
+  "xthl",
+];
+
+const registers = ["a", "b", "c", "d", "e", "h", "l", "sp", "pc", "psw"];
 
 const createSyntaxStyles = (content) => {
-  return content.split('\n').map(line => {
-    // Handle comments first
-    if (line.trim().startsWith(';')) {
-      return `<span style="color: #34D399">${line}</span>`;
-    }
+  return content
+    .split("\n")
+    .map((line) => {
+      // Handle comments first
+      if (line.trim().startsWith(";")) {
+        return `<span style="color: #34D399">${line}</span>`;
+      }
 
-    let processedLine = line;
-    
-    // Handle labels (words followed by colon)
-    processedLine = processedLine.replace(
-      /([a-zA-Z_]\w*):/g, 
-      '<span style="color: #C084FC">$1:</span>'
-    );
+      let processedLine = line;
 
-    // Handle opcodes (case insensitive)
-    opcodes.forEach(opcode => {
-      const regex = new RegExp(`\\b${opcode}\\b`, 'gi');
+      // Handle labels (words followed by colon)
       processedLine = processedLine.replace(
-        regex,
-        match => `<span style="color: #60A5FA">${match}</span>`
+        /([a-zA-Z_]\w*):/g,
+        '<span style="color: #C084FC">$1:</span>'
       );
-    });
 
-    // Handle registers (case insensitive)
-    registers.forEach(register => {
-      const regex = new RegExp(`\\b${register}\\b`, 'gi');
+      // Handle opcodes (case insensitive)
+      opcodes.forEach((opcode) => {
+        const regex = new RegExp(`\\b${opcode}\\b`, "gi");
+        processedLine = processedLine.replace(
+          regex,
+          (match) => `<span style="color: #60A5FA">${match}</span>`
+        );
+      });
+
+      // Handle registers (case insensitive)
+      registers.forEach((register) => {
+        const regex = new RegExp(`\\b${register}\\b`, "gi");
+        processedLine = processedLine.replace(
+          regex,
+          (match) => `<span style="color: #FB923C">${match}</span>`
+        );
+      });
+
+      // Handle numbers (hexadecimal with h/H suffix, 0x prefix, and decimal)
       processedLine = processedLine.replace(
-        regex,
-        match => `<span style="color: #FB923C">${match}</span>`
+        /\b(0x[0-9A-Fa-f]+|[0-9A-Fa-f]+[hH]\b|\d+)\b/g,
+        '<span style="color: #F97316">$1</span>'
       );
-    });
 
-    // Handle numbers (hexadecimal with h/H suffix, 0x prefix, and decimal)
-    processedLine = processedLine.replace(
-      /\b(0x[0-9A-Fa-f]+|[0-9A-Fa-f]+[hH]\b|\d+)\b/g, 
-      '<span style="color: #F97316">$1</span>'
-    );
-
-    return processedLine;
-  }).join('\n');
+      return processedLine;
+    })
+    .join("\n");
 };
 
 export function CodeEditor() {
   const [value, setValue] = useState(
     `;Program title\n\nJMP start    ; uppercase JMP\n\n;data\nMOV A, B     ; uppercase MOV and registers\nMVI A, 0FFh   ; hex with h\nMVI B, 0FFH   ; hex with H\nLXI H, 1234h  ; four digit hex\nMVI C, 0x42   ; hex with 0x\nMVI D, 64     ; decimal\n\n;code\nstart: nop    ; lowercase nop\nmov a, c      ; lowercase mov and registers\nhlt           ; lowercase hlt`
   );
-  const [highlightedContent, setHighlightedContent] = useState('');
+  const [highlightedContent, setHighlightedContent] = useState("");
   const height = "calc(100vh - 200px)";
   const lineNumbersRef = useRef(null);
   const textAreaRef = useRef(null);
@@ -150,8 +237,8 @@ export function CodeEditor() {
                 ref={highlightRef}
                 className="absolute top-0 left-0 w-full h-full pointer-events-none p-2 font-mono text-sm whitespace-pre overflow-hidden"
                 dangerouslySetInnerHTML={{ __html: highlightedContent }}
-                style={{ 
-                  color: '#64748b',
+                style={{
+                  color: "#64748b",
                   lineHeight: "24px",
                 }}
               />
