@@ -57,7 +57,7 @@ export default function Layout() {
             <aside className="h-full w-64 md:w-72 lg:w-80 border-r border-border/40">
               <ScrollArea className="h-full p-4">
                 <div className="flex flex-col gap-4">
-                  <div className="">
+                  <div className="flex flex-col gap-4">
                     <RegistersPanel />
                     <FlagPanel />
                   </div>
