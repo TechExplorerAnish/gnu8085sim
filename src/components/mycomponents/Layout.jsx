@@ -57,7 +57,7 @@ export default function Layout() {
                 size="icon"
                 onClick={() => setLeftSidebarOpen(!leftSidebarOpen)}
               >
-                <Menu className="h-4 w-4" />
+                <Menu className="h-4 w-4 z-10" />
               </Button>
             )}
             <Toolbar sayhey={sayhey} />
