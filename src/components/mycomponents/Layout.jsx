@@ -50,7 +50,7 @@ export default function Layout() {
                 size="icon"
                 onClick={() => setLeftSidebarOpen(!leftSidebarOpen)}
               >
-                <Menu className="h-4 w-4 z-10" />
+                <Menu className="h-4 w-4 z-50" />
               </Button>
             )}
             <Toolbar />
@@ -82,11 +82,12 @@ export default function Layout() {
         {/* Left Sidebar */}
         <aside
           className={`
-            fixed md:relative z-40 
+            fixed md:relative
+            ${isMobile?"z-40":""}
             ${
               leftSidebarOpen
                 ? "translate-x-0"
-                : "-translate-x-full md:translate-x-0"
+                : "-translate-x-full md:translate-x-1"
             } 
             ${leftSidebarOpen ? "w-64 md:w-72 lg:w-80" : "w-0 md:w-0"}
             transition-all duration-300 

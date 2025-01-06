@@ -105,7 +105,6 @@ const createSyntaxStyles = (content) => {
       if (line.trim().startsWith(";")) {
         return `<span style="color: #34D399">${line}</span>`;
       }
-
       let processedLine = line;
 
       // Handle labels (words followed by colon)
@@ -119,7 +118,7 @@ const createSyntaxStyles = (content) => {
         const regex = new RegExp(`\\b${opcode}\\b`, "gi");
         processedLine = processedLine.replace(
           regex,
-          (match) => `<span style="color: #60A5FA">${match}</span>`
+          (match) => `<span style="color: #44d37c">${match}</span>`
         );
       });
 
@@ -128,7 +127,7 @@ const createSyntaxStyles = (content) => {
         const regex = new RegExp(`\\b${register}\\b`, "gi");
         processedLine = processedLine.replace(
           regex,
-          (match) => `<span style="color: #FB923C">${match}</span>`
+          (match) => `<span style="color: #f2bf27">${match}</span>`
         );
       });
 
