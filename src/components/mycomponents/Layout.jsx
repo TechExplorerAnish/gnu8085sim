@@ -21,8 +21,6 @@ export default function Layout() {
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
-  const [touchStart, setTouchStart] = useState(null);
-  const [touchEnd, setTouchEnd] = useState(null);
   useEffect(() => {
     const root = window.document.documentElement;
     root.classList.remove("light", "dark");
@@ -41,36 +39,10 @@ export default function Layout() {
     return () => window.removeEventListener("resize", handleResize);
   }, [theme]);
 
-  const sayhey = () => {
-    console.log("hey", touchStart, touchEnd);
-    alert(
-      `touchstart:${Math.floor(touchStart)} touchEnd:${Math.floor(touchEnd)}`
-    );
-  };
-
-  const onTouchStart = (e) => {
-    setTouchStart(e.targetTouches[0].clientX);
-    // console.log("ontouchstart: ", e);
-  };
-  const onTouchMove = (e) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-    // console.log("ontouchmove: ", e);
-  };
-  const onTouchEnd = (e) => {
-    console.log("ontouchend: ", e);
-    sayhey(touchStart, touchEnd);
-    setTouchStart(0);
-    setTouchEnd(0);
-  };
   return (
     <div className="flex flex-col h-screen bg-background">
       <header className="sticky top-0 z-50 border-b border-border/40 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div
-          onTouchStart={onTouchStart}
-          onTouchMove={onTouchMove}
-          onTouchEnd={onTouchEnd}
-          className="flex items-center justify-between p-2"
-        >
+        <div className="flex items-center justify-between p-2">
           <div className="flex items-center gap-2">
             {isMobile && (
               <Button
