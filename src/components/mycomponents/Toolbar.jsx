@@ -19,14 +19,11 @@ import {
   Settings,
   BugIcon as Debug,
 } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 
-export function Toolbar({ sayhey }) {
+export function Toolbar() {
   const [isMobile, setIsMobile] = useState(false);
   const [isCompact, setIsCompact] = useState(false);
-  const [touchStart, setTouchStart] = useState(null);
-  const [touchEnd, setTouchEnd] = useState(null);
-  const toolbarRef = useRef();
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
@@ -68,28 +65,11 @@ export function Toolbar({ sayhey }) {
     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
   );
 
-  const onTouchStart = (e) => {
-    setTouchStart(e.targetTouches[0].clientX);
-    // console.log("ontouchstart: ", e);
-  };
-  const onTouchMove = (e) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-    // console.log("ontouchmove: ", e);
-  };
-  const onTouchEnd = (e) => {
-    console.log("ontouchend: ", e);
-    sayhey(touchStart, touchEnd);
-  };
   return (
-    <Card className="bg-inherit shadow-none border-0" ref={toolbarRef}>
+    <Card className="bg-inherit shadow-none border-0">
       <CardContent className="p-2">
         <TooltipProvider>
-          <div
-            onTouchStart={onTouchStart}
-            onTouchMove={onTouchMove}
-            onTouchEnd={onTouchEnd}
-            className="flex items-center justify-between w-full"
-          >
+          <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-1 md:gap-2">
               {/* File Operations Group */}
               <div className="flex items-center gap-1">
