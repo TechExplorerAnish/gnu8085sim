@@ -174,7 +174,7 @@ export function CodeEditor() {
   return (
     <TooltipProvider>
       <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col">
-        <CardHeader className="space-y-1 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-gray-800 dark:to-gray-900 flex-none">
+        <CardHeader className="space-y-1 rounded-t-lg bg-gradient-to-r from-slate-50 to-slate-100 dark:from-gray-800 dark:to-gray-900 flex-none">
           <CardTitle className="text-2xl font-bold flex items-center justify-between text-slate-800 dark:text-slate-100">
             Code Editor
           </CardTitle>
@@ -214,7 +214,7 @@ export function CodeEditor() {
             {/* Line Numbers Column */}
             <div
               ref={lineNumbersRef}
-              className="flex-none w-12 bg-slate-50 dark:bg-gray-800 border-r border-slate-200 dark:border-gray-700 overflow-hidden"
+              className="flex-none w-12 rounded-l-lg bg-slate-50 dark:bg-gray-800 border-r border-slate-200 dark:border-gray-700 overflow-hidden"
               style={{ height: "100%" }}
             >
               <div className="pt-2 w-full">

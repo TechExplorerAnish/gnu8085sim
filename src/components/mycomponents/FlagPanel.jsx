@@ -28,8 +28,8 @@ export default function FlagPanel() {
   ];
   return (
     <TooltipProvider>
-      <Card className=" hover:shadow-xl transition-shadow duration-300">
-        <CardHeader className="space-y-1 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-gray-800 dark:to-gray-900">
+      <Card className=" hover:shadow-xl overflow-hidden transition-shadow duration-300">
+        <CardHeader className="space-y-1  bg-gradient-to-r from-slate-50 to-slate-100 dark:from-gray-800 dark:to-gray-900">
           <CardTitle className="text-2xl font-bold flex items-center justify-between text-slate-800 dark:text-slate-100">
             Processor Flags
           </CardTitle>

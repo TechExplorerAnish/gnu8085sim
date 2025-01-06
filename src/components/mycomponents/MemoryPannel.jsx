@@ -1,8 +1,11 @@
 /** @format */
+
 import { useState, useMemo, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Search } from "lucide-react";
 
 const ITEMS_PER_PAGE = 1000;
 const TOTAL_MEMORY_SIZE = 0xffff - 1;
@@ -11,6 +14,7 @@ export function MemoryPanel() {
   const [searchValue, setSearchValue] = useState("");
   const [startAddress, setStartAddress] = useState(0);
   const [memoryData, setMemoryData] = useState([]);
+  const [error, setError] = useState("");
   const parentRef = useRef();
 
   const visibleItems = useMemo(() => {
@@ -35,10 +39,8 @@ export function MemoryPanel() {
     return items;
   }, [startAddress, memoryData]);
 
-  const itemsToVirtualize = visibleItems.length;
-
   const rowVirtualizer = useVirtualizer({
-    count: itemsToVirtualize,
+    count: visibleItems.length,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 40,
     overscan: 5,
@@ -57,6 +59,7 @@ export function MemoryPanel() {
       targetAddress >= 0 &&
       targetAddress <= TOTAL_MEMORY_SIZE
     ) {
+      setError("");
       if (targetAddress + ITEMS_PER_PAGE > TOTAL_MEMORY_SIZE) {
         setStartAddress(targetAddress);
       } else {
@@ -72,8 +75,8 @@ export function MemoryPanel() {
         }
       }, 0);
     } else {
-      alert(
-        "Invalid address! Please enter a valid hex (with 'h' suffix) or decimal address (0-FFFF)"
+      setError(
+        "Please enter a valid hex (with 'h' suffix) or decimal address (0-FFFF)"
       );
     }
   };
@@ -122,16 +125,17 @@ export function MemoryPanel() {
   };
 
   return (
-    <div className="p-4 bg-background rounded-lg border">
+    <div className="p-4 bg-background  border">
       <div className="flex items-center gap-4 mb-4">
-        <div className="flex-3">
+        <div className="flex-1 relative">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="text"
             placeholder="Enter address (hex with 'h' suffix or decimal)"
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             onKeyPress={handleKeyPress}
-            className="w-full bg-slate-100 dark:bg-slate-900"
+            className="w-full bg-slate-100 dark:bg-slate-900 pl-8"
           />
         </div>
         <Button
@@ -143,8 +147,14 @@ export function MemoryPanel() {
         </Button>
       </div>
 
-      <div className="rounded-md border bg-muted/50">
-        <div className="grid grid-cols-3 gap-4 p-3 border-b font-medium text-sm bg-gradient-to-r from-slate-50 to-slate-100 dark:from-gray-800 dark:to-gray-900">
+      {error && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      <div className="rounded-lg border">
+        <div className="grid grid-cols-3 rounded-t-lg gap-4 p-3 border-b font-medium text-smspace-y-1 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-gray-800 dark:to-gray-950  ">
           <div>Address (Hex)</div>
           <div>Address (Dec)</div>
           <div>Data (Dec)</div>
@@ -166,7 +176,7 @@ export function MemoryPanel() {
                 <div
                   key={item.address}
                   data-index={virtualItem.index}
-                  className="grid grid-cols-3 gap-4 py-1 text-sm items-center hover:bg-accent/50 transition-colors absolute top-0 left-0 w-full"
+                  className="grid grid-cols-3 gap-4 py-1 text-sm bg-inherit items-center hover:bg-slate-900 transition-colors absolute top-0 left-0 w-full"
                   style={{
                     height: `${virtualItem.size}px`,
                     transform: `translateY(${virtualItem.start}px)`,
@@ -181,7 +191,6 @@ export function MemoryPanel() {
                     } font-mono pl-3 flex items-center`}
                   >
                     <span>
-                      {" "}
                       {item.address.toString(16).toUpperCase().padStart(4, "0")}
                       h
                     </span>
@@ -200,9 +209,9 @@ export function MemoryPanel() {
                     type="text"
                     defaultValue={parseInt(item.value, 16)}
                     maxLength={4}
-                    onChange={(e) => handleMemoryChange(e, item.address)}
+                    onChange={(e) => handleMemoryChange(e)}
                     onKeyPress={(e) => handleMemoryKeyPress(e, item.address)}
-                    className="h-8 w-20 font-mono text-center"
+                    className="h-8 w-20 font-mono text-center mx-auto"
                   />
                 </div>
               );
@@ -213,4 +222,5 @@ export function MemoryPanel() {
     </div>
   );
 }
+
 export default MemoryPanel;
