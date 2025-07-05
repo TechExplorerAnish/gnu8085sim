@@ -1,4 +1,7 @@
+import { create } from "zustand";
+
 export const useCodeStore = create((set) => ({
+
     sourceCode: "",
     labels: {},
     errors: [],
