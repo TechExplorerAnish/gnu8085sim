@@ -30,3 +30,55 @@ export const useMemoryStore = create((set, get) => ({
   },
 }));
 
+
+
+export const useRegisterStore = create((set, get) => ({
+    // 8-bit general purpose registers
+    A: 0x00,
+    B: 0x00,
+    C: 0x00,
+    D: 0x00,
+    E: 0x00,
+    H: 0x00,
+    L: 0x00,
+  
+    // Special 16-bit registers
+    PC: 0x0000,
+    SP: 0xFFFF,
+  
+    // Flags (bit or boolean style)
+    flags: {
+      Z: 0,   // Zero flag
+      S: 0,   // Sign flag
+      P: 0,   // Parity flag
+      CY: 0,  // Carry flag
+      AC: 0   // Auxiliary carry
+    },
+  
+    // Setters
+  
+    setRegister: (reg, value) => {
+      if (['A', 'B', 'C', 'D', 'E', 'H', 'L'].includes(reg)) {
+        set({ [reg]: value & 0xFF });
+      } else if (['PC', 'SP'].includes(reg)) {
+        set({ [reg]: value & 0xFFFF });
+      }
+    },
+  
+    setFlags: (newFlags) => {
+      set((state) => ({
+        flags: { ...state.flags, ...newFlags }
+      }));
+    },
+  
+    resetRegisters: () => {
+      set({
+        A: 0, B: 0, C: 0, D: 0, E: 0, H: 0, L: 0,
+        PC: 0, SP: 0xFFFF,
+        flags: { Z: 0, S: 0, P: 0, CY: 0, AC: 0 }
+      });
+    }
+  }));
+  
+  
+ 
