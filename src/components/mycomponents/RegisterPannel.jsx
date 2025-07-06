@@ -32,6 +32,8 @@ export function RegistersPanel() {
   const PC = useRegisterStore((state) => state.PC);
   const SP = useRegisterStore((state) => state.SP);
   const flags = useRegisterStore((state) => state.flags);
+ 
+  const resetRegisters = useRegisterStore((state) => state.resetRegisters);
 
   // Format register values
   const pclower = (PC & 0x00FF).toString(16).padStart(2, "0").toUpperCase();
@@ -75,8 +77,8 @@ export function RegistersPanel() {
         <CardHeader className="space-y-1 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-gray-800 dark:to-gray-900 p-4 sm:p-6">
           <CardTitle className="text-xl sm:text-2xl font-bold flex items-center justify-between text-slate-800 dark:text-slate-100">
             <span className="truncate">Registers</span>
-            <Badge variant="outline" className="text-xs whitespace-nowrap ml-2">
-              8080
+            <Badge onClick={resetRegisters} variant="outline" className="text-xs whitespace-nowrap ml-2 cursor-pointer">
+              reset registers
             </Badge>
           </CardTitle>
         </CardHeader>

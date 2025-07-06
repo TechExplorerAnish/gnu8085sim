@@ -61,16 +61,16 @@ export const executeInstruction = ({
   const opcode = memory[pc].toString(16).toUpperCase().padStart(2, "0");
   const opcodeBytes = getOpcodeBytes(opcode);
 
-  console.log(
-    "Executing opcode:",
-    opcode,
-    "at PC:",
-    pc,
-    "with bytes:",
-    opcodeBytes,
-    "memory[pc]:",
-    memory[pc]
-  );
+  // console.log(
+  //   "Executing opcode:",
+  //   opcode,
+  //   "at PC:",
+  //   pc,
+  //   "with bytes:",
+  //   opcodeBytes,
+  //   "memory[pc]:",
+  //   memory[pc]
+  // );
 
   switch (opcode) {
     // NOP
@@ -1776,7 +1776,6 @@ export const executeInstruction = ({
     case "76":
       // Halt - stop execution
       return { halt: true };
-    
 
     // RST Instructions
     case "C7": {
@@ -1832,14 +1831,14 @@ export const executeInstruction = ({
     case "D3": {
       const port = memory[pc + 1] || 0;
       // OUT instruction - output accumulator to port
-      console.log(`OUT: Port ${port.toString(16)}, Data: ${r.A.toString(16)}`);
+      // console.log(`OUT: Port ${port.toString(16)}, Data: ${r.A.toString(16)}`);
       setRegisters({ ...r, PC: pc + opcodeBytes });
       break;
     }
     case "DB": {
       const port = memory[pc + 1] || 0;
       // IN instruction - input from port to accumulator
-      console.log(`IN: Port ${port.toString(16)}`);
+      // console.log(`IN: Port ${port.toString(16)}`);
       // For simulation, we'll just set A to 0
       setRegisters({ ...r, A: 0, PC: pc + opcodeBytes });
       break;
@@ -1885,20 +1884,19 @@ export const executeInstruction = ({
     // Interrupt Instructions
     case "F3": {
       // DI - Disable interrupts
-      console.log("Interrupts disabled");
+      // console.log("Interrupts disabled");
       setRegisters({ ...r, PC: pc + opcodeBytes });
       break;
     }
     case "FB": {
       // EI - Enable interrupts
-      console.log("Interrupts enabled");
+      // console.log("Interrupts enabled");
       setRegisters({ ...r, PC: pc + opcodeBytes });
       break;
     }
 
-
     default: {
-      console.warn(`Unknown opcode: ${opcode} at PC: ${pc.toString(16)}`);
+      // console.warn(`Unknown opcode: ${opcode} at PC: ${pc.toString(16)}`);
       setRegisters({ ...r, PC: pc + opcodeBytes });
       break;
     }

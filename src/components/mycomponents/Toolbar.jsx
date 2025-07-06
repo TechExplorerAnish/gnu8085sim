@@ -52,8 +52,10 @@ export function Toolbar() {
     const setFlags = useRegisterStore.getState().setFlags;
     const getFlags = useRegisterStore.getState().getFlags;
     useRegisterStore.getState().setPC(getLoadAddress());
-    let intervalId = setInterval(() => {
-      const result = executeInstruction({
+    let result;
+    // let intervalId = setInterval(() => {
+      do{
+       result = executeInstruction({
         memory,
         getRegisters,
         setRegisters,
@@ -61,10 +63,11 @@ export function Toolbar() {
         getFlags,
       });
       if (result.halt) {
-        clearInterval(intervalId);
+        // clearInterval(intervalId);
         console.log("Program halted.");
       }
-    }, 500);
+    } while (!result.halt);
+    // }, 0);
   };
 
   const loadMemoryFromBackend = (backendMemory) => {
@@ -78,7 +81,7 @@ export function Toolbar() {
 
   const handleRun = async () => {
     const startingAddress = getLoadAddress();
-    console.log("Starting address:", startingAddress);
+    // console.log("Starting address:", startingAddress);
     const response = await fetch("http://localhost:8000/assemble", {
       method: "POST",
       headers: {
@@ -91,7 +94,7 @@ export function Toolbar() {
     });
 
     const data = await response.json();
-    console.log(data);
+    // console.log(data);
     loadMemoryFromBackend(data.memory);
     setLabels(data.labels);
   };
