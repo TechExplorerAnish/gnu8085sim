@@ -17,7 +17,7 @@ import AssemblerMessage from "./AssemblerMessage";
 import FlagPanel from "./FlagPanel";
 
 export default function Layout() {
-  const [theme, setTheme] = useState("dark");
+  const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
@@ -25,6 +25,7 @@ export default function Layout() {
     const root = window.document.documentElement;
     root.classList.remove("light", "dark");
     root.classList.add(theme);
+    localStorage.setItem("theme", theme);
 
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
@@ -33,6 +34,7 @@ export default function Layout() {
         setRightSidebarOpen(false);
       }
     };
+ 
 
     handleResize();
     window.addEventListener("resize", handleResize);
