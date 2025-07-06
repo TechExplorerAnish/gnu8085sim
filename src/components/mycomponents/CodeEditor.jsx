@@ -10,152 +10,64 @@ import {
 } from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
 import { InfoIcon } from "lucide-react";
+import { createSyntaxStyles } from "@/utils";
+import {useCodeStore} from "@/store/codeStore";
 
-// Define syntax highlighting rules
-const opcodes = [
-  "aci",
-  "adc",
-  "add",
-  "adi",
-  "ana",
-  "ani",
-  "call",
-  "cc",
-  "cm",
-  "cma",
-  "cmc",
-  "cmp",
-  "cnc",
-  "cnz",
-  "cp",
-  "cpe",
-  "cpi",
-  "cpo",
-  "cz",
-  "daa",
-  "dad",
-  "dcr",
-  "dcx",
-  "di",
-  "ei",
-  "hlt",
-  "in",
-  "inr",
-  "inx",
-  "jc",
-  "jm",
-  "jmp",
-  "jnc",
-  "jnz",
-  "jp",
-  "jpe",
-  "jpo",
-  "jz",
-  "lda",
-  "ldax",
-  "lhld",
-  "lxi",
-  "mov",
-  "mvi",
-  "nop",
-  "ora",
-  "ori",
-  "out",
-  "pchl",
-  "pop",
-  "push",
-  "ral",
-  "rar",
-  "rc",
-  "ret",
-  "rim",
-  "rlc",
-  "rm",
-  "rnc",
-  "rnz",
-  "rp",
-  "rpe",
-  "rpo",
-  "rrc",
-  "rst",
-  "rz",
-  "sbb",
-  "sbi",
-  "shld",
-  "sim",
-  "sphl",
-  "sta",
-  "stax",
-  "stc",
-  "sub",
-  "sui",
-  "xchg",
-  "xra",
-  "xri",
-  "xthl",
-];
-
-const registers = ["a", "b", "c", "d", "e", "h", "l", "sp", "pc", "psw"];
-
-const createSyntaxStyles = (content) => {
-  return content
-    .split("\n")
-    .map((line) => {
-      // Handle comments first
-      if (line.trim().startsWith(";")) {
-        return `<span style="color: #34D399">${line}</span>`;
-      }
-      let processedLine = line;
-
-      // Handle labels (words followed by colon)
-      processedLine = processedLine.replace(
-        /([a-zA-Z_]\w*):/g,
-        '<span style="color: #C084FC">$1:</span>'
-      );
-
-      // Handle opcodes (case insensitive)
-      opcodes.forEach((opcode) => {
-        const regex = new RegExp(`\\b${opcode}\\b`, "gi");
-        processedLine = processedLine.replace(
-          regex,
-          (match) => `<span style="color: #44d37c">${match}</span>`
-        );
-      });
-
-      // Handle registers (case insensitive)
-      registers.forEach((register) => {
-        const regex = new RegExp(`\\b${register}\\b`, "gi");
-        processedLine = processedLine.replace(
-          regex,
-          (match) => `<span style="color: #f2bf27">${match}</span>`
-        );
-      });
-
-      // Handle numbers (hexadecimal with h/H suffix, 0x prefix, and decimal)
-      processedLine = processedLine.replace(
-        /\b(0x[0-9A-Fa-f]+|[0-9A-Fa-f]+[hH]\b|\d+)\b/g,
-        '<span style="color: #F97316">$1</span>'
-      );
-
-      return processedLine;
-    })
-    .join("\n");
-};
 
 export function CodeEditor() {
-  const [value, setValue] = useState(
-    `;Program title\n\nJMP start    ; uppercase JMP\n\n;data\nMOV A, B     ; uppercase MOV and registers\nMVI A, 0FFh   ; hex with h\nMVI B, 0FFH   ; hex with H\nLXI H, 1234h  ; four digit hex\nMVI C, 0x42   ; hex with 0x\nMVI D, 64     ; decimal\n\n;code\nstart: nop    ; lowercase nop\nmov a, c      ; lowercase mov and registers\nhlt           ; lowercase hlt`
-  );
+
+  const {sourceCode, loadAddress, setLoadAddress,setSourceCode} = useCodeStore();
+  const [programStartingAddr, setProgramStartingAddr] = useState("0000h")
   const [highlightedContent, setHighlightedContent] = useState("");
   const height = "calc(100vh - 200px)";
   const lineNumbersRef = useRef(null);
   const textAreaRef = useRef(null);
   const highlightRef = useRef(null);
   const editorWrapperRef = useRef(null);
+  
+
+  useEffect(()=>{
+    const hexloadAddress = parseInt(loadAddress, 16).toString(16).padStart(4, '0') + 'h';
+    setProgramStartingAddr(hexloadAddress);
+  },[])
 
   useEffect(() => {
-    setHighlightedContent(createSyntaxStyles(value));
-  }, [value]);
+    setHighlightedContent(createSyntaxStyles(sourceCode));
+  }, [sourceCode]);
+
+  const handleProgramCounterInput = (e)=>{
+    const inputValue = e.target.value.trim();
+    if(inputValue.endsWith('h') || inputValue.endsWith('H')) {
+      const hexValue = inputValue.slice(0, -1);
+      if (/^[0-9a-fA-F]+$/.test(hexValue)) {
+       const decimalValue = parseInt(hexValue, 16);
+        if (decimalValue < 0 || decimalValue > 0xFFFF) {
+          alert("Address must be between 0x0000 and 0xFFFF.");
+          e.target.value = programStartingAddr; // Reset to previous value
+          return;
+        }
+        setProgramStartingAddr(`${hexValue}h`);
+        setLoadAddress(decimalValue)
+
+        
+      } else {
+        alert("Invalid hexadecimal address format.");
+      }
+    }
+    else if (/^\d+$/.test(inputValue)) {
+      const decimalValue = parseInt(inputValue, 10);
+      if (decimalValue < 0 || decimalValue > 65535) {
+        alert("Address must be between 0 and 65535.");
+        e.target.value = programStartingAddr; // Reset to previous value
+        return;
+      }
+      setProgramStartingAddr(`${decimalValue.toString(16).padStart(4, '0')}h`);
+      setLoadAddress(decimalValue);
+    } else {
+      alert("Invalid address format. Use hexadecimal (e.g., 1A2Bh) or decimal (e.g., 6700).");
+    }
+  }
+
 
   const handleScroll = (e) => {
     const scrollTop = e.target.scrollTop;
@@ -168,7 +80,7 @@ export function CodeEditor() {
   };
 
   // Calculate line numbers based on actual content
-  const lineNumbers = value.split("\n").map((_, i) => i + 1);
+  const lineNumbers = sourceCode.split("\n").map((_, i) => i + 1);
 
   return (
     <TooltipProvider>
@@ -199,6 +111,9 @@ export function CodeEditor() {
               <Input
                 id="loadAt"
                 type="text"
+                value={programStartingAddr}
+                onChange={(e) => setProgramStartingAddr(e.target.value)}
+                onBlur={handleProgramCounterInput}
                 className="px-4 py-2 font-mono rounded-md border border-slate-200 dark:border-gray-700 bg-slate-50 dark:bg-gray-800 text-slate-700 dark:text-slate-200 focus:border-slate-300 dark:focus:border-gray-600 transition-all"
                 placeholder="Enter address..."
               />
@@ -244,8 +159,8 @@ export function CodeEditor() {
               {/* Textarea Layer */}
               <textarea
                 ref={textAreaRef}
-                value={value}
-                onChange={(e) => setValue(e.target.value)}
+                value={sourceCode}
+                onChange={(e)=>setSourceCode(e.target.value)}
                 onScroll={handleScroll}
                 className="absolute top-0 left-0 w-full h-full font-mono text-sm bg-transparent text-transparent caret-slate-700 dark:caret-slate-200 p-2 outline-none resize-none"
                 spellCheck="false"

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Search } from "lucide-react";
+import { useMemoryStore } from "../../store/memoryStore";
 
 const ITEMS_PER_PAGE = 1000;
 const TOTAL_MEMORY_SIZE = 0xffff - 1;
@@ -13,32 +14,64 @@ const TOTAL_MEMORY_SIZE = 0xffff - 1;
 export function MemoryPanel() {
   const [searchValue, setSearchValue] = useState("");
   const [startAddress, setStartAddress] = useState(0);
-  const [memoryData, setMemoryData] = useState([]);
+  const { memory, setMemory } = useMemoryStore();
   const [error, setError] = useState("");
+  const [editingValues, setEditingValues] = useState({}); // Track editing state
   const parentRef = useRef();
 
   const visibleItems = useMemo(() => {
     const items = [];
     const endAddress = TOTAL_MEMORY_SIZE + 1;
-
     if (startAddress + ITEMS_PER_PAGE > TOTAL_MEMORY_SIZE) {
       for (let i = startAddress; i < endAddress; i++) {
+        const memValue = memory[i] || "00h";
+        // Handle both numeric values and hex strings
+        let displayValue;
+        if (typeof memValue === 'number') {
+          displayValue = memValue.toString(16).toUpperCase().padStart(2, "0") + "h";
+        } else if (typeof memValue === 'string') {
+          // If it already has 'h' suffix, use it as is
+          if (memValue.toUpperCase().endsWith('H')) {
+            displayValue = memValue;
+          } else {
+            // If it's a hex string without 'h', add it
+            displayValue = memValue.toUpperCase().padStart(2, "0") + "h";
+          }
+        } else {
+          displayValue = "00h";
+        }
         items.push({
           address: i,
-          value: memoryData[i] || "00",
+          value: displayValue,
         });
       }
     } else {
       for (let i = startAddress; i < startAddress + ITEMS_PER_PAGE; i++) {
+        const memValue = memory[i] || "00h";
+        // Handle both numeric values and hex strings
+        let displayValue;
+        if (typeof memValue === 'number') {
+          displayValue = memValue.toString(16).toUpperCase().padStart(2, "0") + "h";
+        } else if (typeof memValue === 'string') {
+          // If it already has 'h' suffix, use it as is
+          if (memValue.toUpperCase().endsWith('H')) {
+            displayValue = memValue;
+          } else {
+            // If it's a hex string without 'h', add it
+            displayValue = memValue.toUpperCase().padStart(2, "0") + "h";
+          }
+        } else {
+          displayValue = "00h";
+        }
         items.push({
           address: i,
-          value: memoryData[i] || "00",
+          value: displayValue,
         });
       }
     }
     return items;
-  }, [startAddress, memoryData]);
-
+  }, [startAddress, memory]);
+  
   const rowVirtualizer = useVirtualizer({
     count: visibleItems.length,
     getScrollElement: () => parentRef.current,
@@ -54,30 +87,19 @@ export function MemoryPanel() {
       targetAddress = parseInt(searchValue, 10);
     }
 
-    if (
-      !isNaN(targetAddress) &&
-      targetAddress >= 0 &&
-      targetAddress <= TOTAL_MEMORY_SIZE
-    ) {
+    if (!isNaN(targetAddress) && targetAddress >= 0 && targetAddress <= TOTAL_MEMORY_SIZE) {
       setError("");
-      if (targetAddress + ITEMS_PER_PAGE > TOTAL_MEMORY_SIZE) {
-        setStartAddress(targetAddress);
-      } else {
-        setStartAddress(
-          Math.floor(targetAddress / ITEMS_PER_PAGE) * ITEMS_PER_PAGE
-        );
-      }
+      const newStartAddress = Math.floor(targetAddress / ITEMS_PER_PAGE) * ITEMS_PER_PAGE;
+      setStartAddress(newStartAddress);
 
       setTimeout(() => {
-        const indexInView = targetAddress - startAddress;
-        if (indexInView >= 0 && indexInView < visibleItems.length) {
+        const indexInView = targetAddress - newStartAddress;
+        if (indexInView >= 0 && indexInView < ITEMS_PER_PAGE) {
           rowVirtualizer.scrollToIndex(indexInView, { align: "start" });
         }
-      }, 0);
+      }, 100);
     } else {
-      setError(
-        "Please enter a valid hex (with 'h' suffix) or decimal address (0-FFFF)"
-      );
+      setError("Please enter a valid hex (with 'h' suffix) or decimal address (0-FFFF)");
     }
   };
 
@@ -97,16 +119,34 @@ export function MemoryPanel() {
     return isNaN(decValue) ? null : decValue;
   };
 
-  const handleMemoryChange = (e) => {
-    const value = parseInputValue(e.target.value);
-    if (value !== null) {
-      if (value > 255) {
-        e.target.value = "255";
-      } else {
-        e.target.value = value.toString();
+  const handleMemoryChange = (e, address) => {
+    const input = e.target.value.trim();
+    
+    // Update editing state
+    setEditingValues(prev => ({
+      ...prev,
+      [address]: input
+    }));
+    
+    // Validate input length
+    if (input.toUpperCase().endsWith("H")) {
+      const hexValue = parseInt(input.slice(0, -1), 16);
+      if (!isNaN(hexValue) && hexValue > 255) {
+        const newValue = "FFh";
+        setEditingValues(prev => ({
+          ...prev,
+          [address]: newValue
+        }));
       }
     } else {
-      e.target.value = "";
+      const decValue = parseInt(input, 10);
+      if (!isNaN(decValue) && decValue > 255) {
+        const newValue = "255";
+        setEditingValues(prev => ({
+          ...prev,
+          [address]: newValue
+        }));
+      }
     }
   };
 
@@ -114,14 +154,40 @@ export function MemoryPanel() {
     if (e.key === "Enter") {
       const value = parseInputValue(e.target.value);
       if (value !== null && value >= 0 && value <= 255) {
-        const updatedMemory = [...memoryData];
-        updatedMemory[address] = value;
-        setMemoryData(updatedMemory);
-        e.target.value = value.toString();
+        const updatedMemory = [...memory];
+        // Store as hex string with 'h' suffix to match the format from Toolbar
+        updatedMemory[address] = value.toString(16).toUpperCase().padStart(2, "0") + "h";
+        setMemory(updatedMemory);
+        
+        // Clear editing state for this address
+        setEditingValues(prev => {
+          const newState = { ...prev };
+          delete newState[address];
+          return newState;
+        });
       } else {
-        e.target.value = memoryData[address] || "0";
+        // If invalid input, restore the original value and clear editing state
+        setEditingValues(prev => {
+          const newState = { ...prev };
+          delete newState[address];
+          return newState;
+        });
       }
     }
+  };
+
+  const handleMemoryBlur = (e, address) => {
+    // Clear editing state when input loses focus
+    setEditingValues(prev => {
+      const newState = { ...prev };
+      delete newState[address];
+      return newState;
+    });
+  };
+
+  const getInputValue = (item) => {
+    // Return editing value if currently editing, otherwise return the actual memory value
+    return editingValues[item.address] !== undefined ? editingValues[item.address] : item.value;
   };
 
   return (
@@ -154,7 +220,7 @@ export function MemoryPanel() {
       )}
 
       <div className="rounded-lg border">
-        <div className="grid grid-cols-3 rounded-t-lg gap-4 p-3 border-b font-medium text-smspace-y-1 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-gray-800 dark:to-gray-950  ">
+        <div className="grid grid-cols-3 rounded-t-lg gap-4 p-3 border-b font-medium text-sm bg-gradient-to-r from-slate-50 to-slate-100 dark:from-gray-800 dark:to-gray-950">
           <div>Address (Hex)</div>
           <div>Address (Dec)</div>
           <div>Data (Dec)</div>
@@ -179,38 +245,22 @@ export function MemoryPanel() {
                   className="grid grid-cols-3 gap-4 py-1 text-sm bg-inherit items-center hover:bg-slate-900 transition-colors absolute top-0 left-0 w-full"
                   style={{
                     height: `${virtualItem.size}px`,
-                    transform: `translateY(${virtualItem.start}px)`,
+                    transform: `translateY(${virtualItem.start}px)`
                   }}
                 >
-                  <div
-                    className={`${
-                      searchValue == item.address ||
-                      parseInt(searchValue.slice(0, -1), 16) == item.address
-                        ? "bg-red-300 rounded-sm h-full"
-                        : ""
-                    } font-mono pl-3 flex items-center`}
-                  >
-                    <span>
-                      {item.address.toString(16).toUpperCase().padStart(4, "0")}
-                      h
-                    </span>
+                  <div className={`font-mono pl-3 flex items-center ${searchValue.toUpperCase().replace("H", "") === item.address.toString(16).toUpperCase() ? "bg-red-300 rounded-sm h-full" : ""}`}>
+                    <span>{item.address.toString(16).toUpperCase().padStart(4, "0")}h</span>
                   </div>
-                  <div
-                    className={`${
-                      searchValue == item.address ||
-                      parseInt(searchValue.slice(0, -1), 16) == item.address
-                        ? "bg-blue-300 rounded-sm h-full"
-                        : ""
-                    } font-mono text-center flex items-center justify-center`}
-                  >
+                  <div className={`font-mono text-center flex items-center justify-center ${searchValue === item.address.toString() ? "bg-blue-300 rounded-sm h-full" : ""}`}>
                     <span>{item.address}</span>
                   </div>
                   <Input
                     type="text"
-                    defaultValue={parseInt(item.value, 16)}
+                    value={getInputValue(item)}
                     maxLength={4}
-                    onChange={(e) => handleMemoryChange(e)}
+                    onChange={(e) => handleMemoryChange(e, item.address)}
                     onKeyPress={(e) => handleMemoryKeyPress(e, item.address)}
+                    onBlur={(e) => handleMemoryBlur(e, item.address)}
                     className="h-8 w-20 font-mono text-center mx-auto"
                   />
                 </div>

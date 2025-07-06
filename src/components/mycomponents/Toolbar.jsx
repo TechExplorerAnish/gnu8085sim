@@ -20,8 +20,20 @@ import {
   BugIcon as Debug,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+// import { useSimulationStore } from "@/store/simulationStore";
+import { useCodeStore } from "@/store/codeStore";
+import { useMemoryStore } from "../../store/memoryStore";
+
+
+
+
 
 export function Toolbar() {
+  // const { isRunning, isHalted, isPaused, setRunning, setHalted, setPaused } = useSimulationStore();
+  const { sourceCode , getLoadAddress} = useCodeStore();
+  const {setMemoryValue} = useMemoryStore();
+  const { setLabels } = useCodeStore();
+
   const [isMobile, setIsMobile] = useState(false);
   const [isCompact, setIsCompact] = useState(false);
   useEffect(() => {
@@ -34,6 +46,31 @@ export function Toolbar() {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  const loadMemoryFromBackend = (backendMemory) => {
+    for (const [addrStr, hexVal] of Object.entries(backendMemory)) {
+      const addr = parseInt(addrStr);
+      const value = parseInt(hexVal, 16);
+      setMemoryValue(addr, value);
+    }
+  };
+
+  
+  const handleRun = async () => {
+    const startingAddress = getLoadAddress();
+    console.log("Starting address:", startingAddress);
+    const response = await fetch("http://localhost:8000/assemble", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ code: sourceCode , start_address: startingAddress}),
+    });
+    const data = await response.json();
+    console.log(data);
+    loadMemoryFromBackend(data.memory);
+    setLabels(data.labels);
+  };
 
   const ToolButton = ({
     icon: Icon,
@@ -96,6 +133,7 @@ export function Toolbar() {
                   icon={Play}
                   label="Run"
                   color="text-green-500 dark:text-green-500"
+                  onClick={handleRun}
                 />
                 {!isMobile && (
                   <>
