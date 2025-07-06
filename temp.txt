@@ -1,0 +1,470 @@
+
+
+=>20 27 30 
+12 13 14 15 17 19 20 23 24 25 27 29 30 33 34 35 37 39 76 C7 CF D7 DF E7 EF F7 FF D3 DB 02 0A 1A 1F 07 0F 2F
+ 3F 09 03 0B 1B 2B 3B 0C 1C 2C 3C 05 0D 1D 2D 3D E3 EB E9 F9 F3 FB
+
+ // STAX Instructions
+    case "02": {
+      const addr = (r.B << 8) | r.C;
+      memory[addr] = r.A;
+      setRegisters({ ...r, PC: pc + opcodeBytes });
+      break;
+    }
+    case "12": {
+      const addr = (r.D << 8) | r.E;
+      memory[addr] = r.A;
+      setRegisters({ ...r, PC: pc + opcodeBytes });
+      break;
+    }
+
+    // LDAX Instructions
+    case "0A": {
+      const addr = (r.B << 8) | r.C;
+      setRegisters({ ...r, A: memory[addr] || 0, PC: pc + opcodeBytes });
+      break;
+    }
+    case "1A": {
+      const addr = (r.D << 8) | r.E;
+      setRegisters({ ...r, A: memory[addr] || 0, PC: pc + opcodeBytes });
+      break;
+    }
+
+    // INX Instructions
+    case "03": {
+      let bc = ((r.B << 8) | r.C) + 1;
+      bc = bc & 0xFFFF;
+      setRegisters({ ...r, B: (bc >> 8) & 0xFF, C: bc & 0xFF, PC: pc + opcodeBytes });
+      break;
+    }
+    case "13": {
+      let de = ((r.D << 8) | r.E) + 1;
+      de = de & 0xFFFF;
+      setRegisters({ ...r, D: (de >> 8) & 0xFF, E: de & 0xFF, PC: pc + opcodeBytes });
+      break;
+    }
+    case "23": {
+      let hl = ((r.H << 8) | r.L) + 1;
+      hl = hl & 0xFFFF;
+      setRegisters({ ...r, H: (hl >> 8) & 0xFF, L: hl & 0xFF, PC: pc + opcodeBytes });
+      break;
+    }
+    case "33": {
+      let sp = r.SP + 1;
+      sp = sp & 0xFFFF;
+      setRegisters({ ...r, SP: sp, PC: pc + opcodeBytes });
+      break;
+    }
+
+    // DCX Instructions
+    case "0B": {
+      let bc = ((r.B << 8) | r.C) - 1;
+      bc = bc & 0xFFFF;
+      setRegisters({ ...r, B: (bc >> 8) & 0xFF, C: bc & 0xFF, PC: pc + opcodeBytes });
+      break;
+    }
+    case "1B": {
+      let de = ((r.D << 8) | r.E) - 1;
+      de = de & 0xFFFF;
+      setRegisters({ ...r, D: (de >> 8) & 0xFF, E: de & 0xFF, PC: pc + opcodeBytes });
+      break;
+    }
+    case "2B": {
+      let hl = ((r.H << 8) | r.L) - 1;
+      hl = hl & 0xFFFF;
+      setRegisters({ ...r, H: (hl >> 8) & 0xFF, L: hl & 0xFF, PC: pc + opcodeBytes });
+      break;
+    }
+    case "3B": {
+      let sp = r.SP - 1;
+      sp = sp & 0xFFFF;
+      setRegisters({ ...r, SP: sp, PC: pc + opcodeBytes });
+      break;
+    }
+
+    // INR Instructions
+    case "04": {
+      const result = r.B + 1;
+      const newFlags = calculateFlags(result, "add");
+      newFlags.AC = calculateAuxiliaryCarry(r.B, 1, "add");
+      newFlags.CY = flags.CY; // INR doesn't affect carry
+      setRegisters({ ...r, B: result & 0xFF, PC: pc + opcodeBytes });
+      setFlags(newFlags);
+      break;
+    }
+    case "0C": {
+      const result = r.C + 1;
+      const newFlags = calculateFlags(result, "add");
+      newFlags.AC = calculateAuxiliaryCarry(r.C, 1, "add");
+      newFlags.CY = flags.CY; // INR doesn't affect carry
+      setRegisters({ ...r, C: result & 0xFF, PC: pc + opcodeBytes });
+      setFlags(newFlags);
+      break;
+    }
+    case "14": {
+      const result = r.D + 1;
+      const newFlags = calculateFlags(result, "add");
+      newFlags.AC = calculateAuxiliaryCarry(r.D, 1, "add");
+      newFlags.CY = flags.CY; // INR doesn't affect carry
+      setRegisters({ ...r, D: result & 0xFF, PC: pc + opcodeBytes });
+      setFlags(newFlags);
+      break;
+    }
+    case "1C": {
+      const result = r.E + 1;
+      const newFlags = calculateFlags(result, "add");
+      newFlags.AC = calculateAuxiliaryCarry(r.E, 1, "add");
+      newFlags.CY = flags.CY; // INR doesn't affect carry
+      setRegisters({ ...r, E: result & 0xFF, PC: pc + opcodeBytes });
+      setFlags(newFlags);
+      break;
+    }
+    case "24": {
+      const result = r.H + 1;
+      const newFlags = calculateFlags(result, "add");
+      newFlags.AC = calculateAuxiliaryCarry(r.H, 1, "add");
+      newFlags.CY = flags.CY; // INR doesn't affect carry
+      setRegisters({ ...r, H: result & 0xFF, PC: pc + opcodeBytes });
+      setFlags(newFlags);
+      break;
+    }
+    case "2C": {
+      const result = r.L + 1;
+      const newFlags = calculateFlags(result, "add");
+      newFlags.AC = calculateAuxiliaryCarry(r.L, 1, "add");
+      newFlags.CY = flags.CY; // INR doesn't affect carry
+      setRegisters({ ...r, L: result & 0xFF, PC: pc + opcodeBytes });
+      setFlags(newFlags);
+      break;
+    }
+    case "34": {
+      const addr = (r.H << 8) | r.L;
+      const result = (memory[addr] || 0) + 1;
+      const newFlags = calculateFlags(result, "add");
+      newFlags.AC = calculateAuxiliaryCarry(memory[addr] || 0, 1, "add");
+      newFlags.CY = flags.CY; // INR doesn't affect carry
+      memory[addr] = result & 0xFF;
+      setRegisters({ ...r, PC: pc + opcodeBytes });
+      setFlags(newFlags);
+      break;
+    }
+    case "3C": {
+      const result = r.A + 1;
+      const newFlags = calculateFlags(result, "add");
+      newFlags.AC = calculateAuxiliaryCarry(r.A, 1, "add");
+      newFlags.CY = flags.CY; // INR doesn't affect carry
+      setRegisters({ ...r, A: result & 0xFF, PC: pc + opcodeBytes });
+      setFlags(newFlags);
+      break;
+    }
+
+    // DCR Instructions
+    case "05": {
+      const result = r.B - 1;
+      const newFlags = calculateFlags(result, "sub");
+      newFlags.AC = calculateAuxiliaryCarry(r.B, 1, "sub");
+      newFlags.CY = flags.CY; // DCR doesn't affect carry
+      setRegisters({ ...r, B: result & 0xFF, PC: pc + opcodeBytes });
+      setFlags(newFlags);
+      break;
+    }
+    case "0D": {
+      const result = r.C - 1;
+      const newFlags = calculateFlags(result, "sub");
+      newFlags.AC = calculateAuxiliaryCarry(r.C, 1, "sub");
+      newFlags.CY = flags.CY; // DCR doesn't affect carry
+      setRegisters({ ...r, C: result & 0xFF, PC: pc + opcodeBytes });
+      setFlags(newFlags);
+      break;
+    }
+    case "15": {
+      const result = r.D - 1;
+      const newFlags = calculateFlags(result, "sub");
+      newFlags.AC = calculateAuxiliaryCarry(r.D, 1, "sub");
+      newFlags.CY = flags.CY; // DCR doesn't affect carry
+      setRegisters({ ...r, D: result & 0xFF, PC: pc + opcodeBytes });
+      setFlags(newFlags);
+      break;
+    }
+    case "1D": {
+      const result = r.E - 1;
+      const newFlags = calculateFlags(result, "sub");
+      newFlags.AC = calculateAuxiliaryCarry(r.E, 1, "sub");
+      newFlags.CY = flags.CY; // DCR doesn't affect carry
+      setRegisters({ ...r, E: result & 0xFF, PC: pc + opcodeBytes });
+      setFlags(newFlags);
+      break;
+    }
+    case "25": {
+      const result = r.H - 1;
+      const newFlags = calculateFlags(result, "sub");
+      newFlags.AC = calculateAuxiliaryCarry(r.H, 1, "sub");
+      newFlags.CY = flags.CY; // DCR doesn't affect carry
+      setRegisters({ ...r, H: result & 0xFF, PC: pc + opcodeBytes });
+      setFlags(newFlags);
+      break;
+    }
+    case "2D": {
+      const result = r.L - 1;
+      const newFlags = calculateFlags(result, "sub");
+      newFlags.AC = calculateAuxiliaryCarry(r.L, 1, "sub");
+      newFlags.CY = flags.CY; // DCR doesn't affect carry
+      setRegisters({ ...r, L: result & 0xFF, PC: pc + opcodeBytes });
+      setFlags(newFlags);
+      break;
+    }
+    case "35": {
+      const addr = (r.H << 8) | r.L;
+      const result = (memory[addr] || 0) - 1;
+      const newFlags = calculateFlags(result, "sub");
+      newFlags.AC = calculateAuxiliaryCarry(memory[addr] || 0, 1, "sub");
+      newFlags.CY = flags.CY; // DCR doesn't affect carry
+      memory[addr] = result & 0xFF;
+      setRegisters({ ...r, PC: pc + opcodeBytes });
+      setFlags(newFlags);
+      break;
+    }
+    case "3D": {
+      const result = r.A - 1;
+      const newFlags = calculateFlags(result, "sub");
+      newFlags.AC = calculateAuxiliaryCarry(r.A, 1, "sub");
+      newFlags.CY = flags.CY; // DCR doesn't affect carry
+      setRegisters({ ...r, A: result & 0xFF, PC: pc + opcodeBytes });
+      setFlags(newFlags);
+      break;
+    }
+
+    // DAD Instructions
+    case "09": {
+      const hl = (r.H << 8) | r.L;
+      const bc = (r.B << 8) | r.C;
+      const result = hl + bc;
+      const newFlags = { ...flags };
+      newFlags.CY = result > 0xFFFF ? 1 : 0;
+      setRegisters({ 
+        ...r, 
+        H: (result >> 8) & 0xFF, 
+        L: result & 0xFF, 
+        PC: pc + opcodeBytes 
+      });
+      setFlags(newFlags);
+      break;
+    }
+    case "19": {
+      const hl = (r.H << 8) | r.L;
+      const de = (r.D << 8) | r.E;
+      const result = hl + de;
+      const newFlags = { ...flags };
+      newFlags.CY = result > 0xFFFF ? 1 : 0;
+      setRegisters({ 
+        ...r, 
+        H: (result >> 8) & 0xFF, 
+        L: result & 0xFF, 
+        PC: pc + opcodeBytes 
+      });
+      setFlags(newFlags);
+      break;
+    }
+    case "29": {
+      const hl = (r.H << 8) | r.L;
+      const result = hl + hl;
+      const newFlags = { ...flags };
+      newFlags.CY = result > 0xFFFF ? 1 : 0;
+      setRegisters({ 
+        ...r, 
+        H: (result >> 8) & 0xFF, 
+        L: result & 0xFF, 
+        PC: pc + opcodeBytes 
+      });
+      setFlags(newFlags);
+      break;
+    }
+    case "39": {
+      const hl = (r.H << 8) | r.L;
+      const result = hl + r.SP;
+      const newFlags = { ...flags };
+      newFlags.CY = result > 0xFFFF ? 1 : 0;
+      setRegisters({ 
+        ...r, 
+        H: (result >> 8) & 0xFF, 
+        L: result & 0xFF, 
+        PC: pc + opcodeBytes 
+      });
+      setFlags(newFlags);
+      break;
+    }
+
+    // Rotate Instructions
+    case "07": {
+      const carry = r.A & 0x80 ? 1 : 0;
+      const newA = ((r.A << 1) & 0xFE) | carry;
+      const newFlags = { ...flags };
+      newFlags.CY = carry;
+      setRegisters({ ...r, A: newA, PC: pc + opcodeBytes });
+      setFlags(newFlags);
+      break;
+    }
+    case "0F": {
+      const carry = r.A & 0x01 ? 1 : 0;
+      const newA = ((r.A >> 1) & 0x7F) | (carry << 7);
+      const newFlags = { ...flags };
+      newFlags.CY = carry;
+      setRegisters({ ...r, A: newA, PC: pc + opcodeBytes });
+      setFlags(newFlags);
+      break;
+    }
+    case "17": {
+      const carry = r.A & 0x80 ? 1 : 0;
+      const newA = ((r.A << 1) & 0xFE) | flags.CY;
+      const newFlags = { ...flags };
+      newFlags.CY = carry;
+      setRegisters({ ...r, A: newA, PC: pc + opcodeBytes });
+      setFlags(newFlags);
+      break;
+    }
+    case "1F": {
+      const carry = r.A & 0x01 ? 1 : 0;
+      const newA = ((r.A >> 1) & 0x7F) | (flags.CY << 7);
+      const newFlags = { ...flags };
+      newFlags.CY = carry;
+      setRegisters({ ...r, A: newA, PC: pc + opcodeBytes });
+      setFlags(newFlags);
+      break;
+    }
+
+    // CMA, CMC, STC
+    case "2F": {
+      setRegisters({ ...r, A: (~r.A) & 0xFF, PC: pc + opcodeBytes });
+      break;
+    }
+    case "37": {
+      const newFlags = { ...flags };
+      newFlags.CY = 1;
+      setRegisters({ ...r, PC: pc + opcodeBytes });
+      setFlags(newFlags);
+      break;
+    }
+    case "3F": {
+      const newFlags = { ...flags };
+      newFlags.CY = flags.CY ? 0 : 1;
+      setRegisters({ ...r, PC: pc + opcodeBytes });
+      setFlags(newFlags);
+      break;
+    }
+
+    // HLT
+    case "76":
+      // Halt - stop execution
+      console.log("HALT instruction executed");
+      break;
+
+    // RST Instructions
+    case "C7": {
+      memory[r.SP - 1] = (pc + opcodeBytes) >> 8;
+      memory[r.SP - 2] = (pc + opcodeBytes) & 0xFF;
+      setRegisters({ ...r, SP: r.SP - 2, PC: 0x00 });
+      break;
+    }
+    case "CF": {
+      memory[r.SP - 1] = (pc + opcodeBytes) >> 8;
+      memory[r.SP - 2] = (pc + opcodeBytes) & 0xFF;
+      setRegisters({ ...r, SP: r.SP - 2, PC: 0x08 });
+      break;
+    }
+    case "D7": {
+      memory[r.SP - 1] = (pc + opcodeBytes) >> 8;
+      memory[r.SP - 2] = (pc + opcodeBytes) & 0xFF;
+      setRegisters({ ...r, SP: r.SP - 2, PC: 0x10 });
+      break;
+    }
+    case "DF": {
+      memory[r.SP - 1] = (pc + opcodeBytes) >> 8;
+      memory[r.SP - 2] = (pc + opcodeBytes) & 0xFF;
+      setRegisters({ ...r, SP: r.SP - 2, PC: 0x18 });
+      break;
+    }
+    case "E7": {
+      memory[r.SP - 1] = (pc + opcodeBytes) >> 8;
+      memory[r.SP - 2] = (pc + opcodeBytes) & 0xFF;
+      setRegisters({ ...r, SP: r.SP - 2, PC: 0x20 });
+      break;
+    }
+    case "EF": {
+      memory[r.SP - 1] = (pc + opcodeBytes) >> 8;
+      memory[r.SP - 2] = (pc + opcodeBytes) & 0xFF;
+      setRegisters({ ...r, SP: r.SP - 2, PC: 0x28 });
+      break;
+    }
+    case "F7": {
+      memory[r.SP - 1] = (pc + opcodeBytes) >> 8;
+      memory[r.SP - 2] = (pc + opcodeBytes) & 0xFF;
+      setRegisters({ ...r, SP: r.SP - 2, PC: 0x30 });
+      break;
+    }
+    case "FF": {
+      memory[r.SP - 1] = (pc + opcodeBytes) >> 8;
+      memory[r.SP - 2] = (pc + opcodeBytes) & 0xFF;
+      setRegisters({ ...r, SP: r.SP - 2, PC: 0x38 });
+      break;
+    }
+
+    // I/O Instructions
+    case "D3": {
+      const port = memory[pc + 1] || 0;
+      // OUT instruction - output accumulator to port
+      console.log(`OUT: Port ${port.toString(16)}, Data: ${r.A.toString(16)}`);
+      setRegisters({ ...r, PC: pc + opcodeBytes });
+      break;
+    }
+    case "DB": {
+      const port = memory[pc + 1] || 0;
+      // IN instruction - input from port to accumulator
+      console.log(`IN: Port ${port.toString(16)}`);
+      // For simulation, we'll just set A to 0
+      setRegisters({ ...r, A: 0, PC: pc + opcodeBytes });
+      break;
+    }
+
+    // Stack Instructions
+    case "E3": {
+      // XTHL - Exchange top of stack with H and L
+      const temp = memory[r.SP] || 0;
+      const temp2 = memory[r.SP + 1] || 0;
+      memory[r.SP] = r.L;
+      memory[r.SP + 1] = r.H;
+      setRegisters({ ...r, H: temp2, L: temp, PC: pc + opcodeBytes });
+      break;
+    }
+    case "EB": {
+      // XCHG - Exchange H and L with D and E
+      const tempH = r.H;
+      const tempL = r.L;
+      setRegisters({ ...r, H: r.D, L: r.E, D: tempH, E: tempL, PC: pc + opcodeBytes });
+      break;
+    }
+    case "E9": {
+      // PCHL - Move H and L to PC
+      const newPC = (r.H << 8) | r.L;
+      setRegisters({ ...r, PC: newPC });
+      break;
+    }
+    case "F9": {
+      // SPHL - Move H and L to SP
+      const newSP = (r.H << 8) | r.L;
+      setRegisters({ ...r, SP: newSP, PC: pc + opcodeBytes });
+      break;
+    }
+
+    // Interrupt Instructions
+    case "F3": {
+      // DI - Disable interrupts
+      console.log("Interrupts disabled");
+      setRegisters({ ...r, PC: pc + opcodeBytes });
+      break;
+    }
+    case "FB": {
+      // EI - Enable interrupts
+      console.log("Interrupts enabled");
+      setRegisters({ ...r, PC: pc + opcodeBytes });
+      break;
+    }
