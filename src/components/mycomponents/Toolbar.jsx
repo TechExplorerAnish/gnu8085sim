@@ -51,6 +51,7 @@ export function Toolbar() {
     const setRegisters = useRegisterStore.getState().setRegisters;
     const setFlags = useRegisterStore.getState().setFlags;
     const getFlags = useRegisterStore.getState().getFlags;
+    useRegisterStore.getState().setPC(getLoadAddress());
     let intervalId = setInterval(() => {
       const result = executeInstruction({
         memory,
