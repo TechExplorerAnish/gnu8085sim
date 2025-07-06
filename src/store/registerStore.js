@@ -70,6 +70,17 @@ export const useRegisterStore = create((set, get) => ({
       return get()[reg];
     }
   },
+  getRegisters: () => ({
+    A: get().A,
+    B: get().B,
+    C: get().C,
+    D: get().D,
+    E: get().E,
+    H: get().H,
+    L: get().L,
+    PC: get().PC,
+    SP: get().SP
+  }),
 
   // Get PC and SP
   getPC: () => get().PC,

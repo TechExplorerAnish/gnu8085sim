@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { InfoIcon } from "lucide-react";
+import { useRegisterStore } from "../../store/registerStore";
 
 const registerDescriptions = {
   A: "Accumulator - Primary register for arithmetic operations",
@@ -20,15 +21,52 @@ const registerDescriptions = {
 };
 
 export function RegistersPanel() {
+  // Subscribe to specific register values for automatic updates
+  const A = useRegisterStore((state) => state.A);
+  const B = useRegisterStore((state) => state.B);
+  const C = useRegisterStore((state) => state.C);
+  const D = useRegisterStore((state) => state.D);
+  const E = useRegisterStore((state) => state.E);
+  const H = useRegisterStore((state) => state.H);
+  const L = useRegisterStore((state) => state.L);
+  const PC = useRegisterStore((state) => state.PC);
+  const SP = useRegisterStore((state) => state.SP);
+  const flags = useRegisterStore((state) => state.flags);
+
+  // Format register values
+  const pclower = (PC & 0x00FF).toString(16).padStart(2, "0").toUpperCase();
+  const pchigher = ((PC & 0xFF00) >> 8).toString(16).padStart(2, "0").toUpperCase();
+  const splower = (SP & 0x00FF).toString(16).padStart(2, "0").toUpperCase();
+  const sphigher = ((SP & 0xFF00) >> 8).toString(16).padStart(2, "0").toUpperCase();
+
+  // Create PSW (Program Status Word) from flags and accumulator
+  const pswLower = A.toString(16).padStart(2, "0").toUpperCase();
+  const pswUpper = (
+    (flags.S << 7) |
+    (flags.Z << 6) |
+    (flags.AC << 4) |
+    (flags.P << 2) |
+    (flags.CY << 0)
+  ).toString(16).padStart(2, "0").toUpperCase();
+
   const registers = {
-    A: "00",
-    BC: ["00", "00"],
-    DE: ["00", "00"],
-    HL: ["00", "00"],
-    PSW: ["00", "00"],
-    PC: ["00", "00"],
-    SP: ["00", "00"],
-    "Int-Reg": "00",
+    A: A.toString(16).padStart(2, "0").toUpperCase(),
+    BC: [
+      B.toString(16).padStart(2, "0").toUpperCase(), 
+      C.toString(16).padStart(2, "0").toUpperCase()
+    ],
+    DE: [
+      D.toString(16).padStart(2, "0").toUpperCase(), 
+      E.toString(16).padStart(2, "0").toUpperCase()
+    ],
+    HL: [
+      H.toString(16).padStart(2, "0").toUpperCase(), 
+      L.toString(16).padStart(2, "0").toUpperCase()
+    ],
+    PSW: [pswUpper, pswLower],
+    PC: [pchigher, pclower],
+    SP: [sphigher, splower],
+    "Int-Reg": "00", // Placeholder for interrupt register
   };
 
   return (

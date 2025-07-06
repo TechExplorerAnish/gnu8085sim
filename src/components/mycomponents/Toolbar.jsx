@@ -23,15 +23,14 @@ import { useState, useEffect } from "react";
 // import { useSimulationStore } from "@/store/simulationStore";
 import { useCodeStore } from "@/store/codeStore";
 import { useMemoryStore } from "../../store/memoryStore";
-
-
-
-
+import { useRegisterStore } from "../../store/registerStore";
+import { executeInstruction } from "@/utils/instructionExecutor";
 
 export function Toolbar() {
   // const { isRunning, isHalted, isPaused, setRunning, setHalted, setPaused } = useSimulationStore();
-  const { sourceCode , getLoadAddress} = useCodeStore();
-  const {setMemoryValue} = useMemoryStore();
+
+  const { sourceCode, getLoadAddress } = useCodeStore();
+  const { setMemoryValue } = useMemoryStore();
   const { setLabels } = useCodeStore();
 
   const [isMobile, setIsMobile] = useState(false);
@@ -46,6 +45,26 @@ export function Toolbar() {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+  const executeProgram = () => {
+    const memory = useMemoryStore.getState().memory;
+    const getRegisters = useRegisterStore.getState().getRegisters;
+    const setRegisters = useRegisterStore.getState().setRegisters;
+    const setFlags = useRegisterStore.getState().setFlags;
+    const getFlags = useRegisterStore.getState().getFlags;
+    let intervalId = setInterval(() => {
+      const result = executeInstruction({
+        memory,
+        getRegisters,
+        setRegisters,
+        setFlags,
+        getFlags,
+      });
+      if (result.halt) {
+        clearInterval(intervalId);
+        console.log("Program halted.");
+      }
+    }, 500);
+  };
 
   const loadMemoryFromBackend = (backendMemory) => {
     for (const [addrStr, hexVal] of Object.entries(backendMemory)) {
@@ -53,9 +72,9 @@ export function Toolbar() {
       const value = parseInt(hexVal, 16);
       setMemoryValue(addr, value);
     }
+    executeProgram();
   };
 
-  
   const handleRun = async () => {
     const startingAddress = getLoadAddress();
     console.log("Starting address:", startingAddress);
@@ -64,8 +83,12 @@ export function Toolbar() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ code: sourceCode , start_address: startingAddress}),
+      body: JSON.stringify({
+        code: sourceCode,
+        start_address: startingAddress,
+      }),
     });
+
     const data = await response.json();
     console.log(data);
     loadMemoryFromBackend(data.memory);

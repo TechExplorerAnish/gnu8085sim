@@ -48,8 +48,6 @@ export function CodeEditor() {
         }
         setProgramStartingAddr(`${hexValue}h`);
         setLoadAddress(decimalValue)
-
-        
       } else {
         alert("Invalid hexadecimal address format.");
       }
