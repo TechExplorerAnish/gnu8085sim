@@ -25,6 +25,7 @@ import { useCodeStore } from "@/store/codeStore";
 import { useMemoryStore } from "../../store/memoryStore";
 import { useRegisterStore } from "../../store/registerStore";
 import { executeInstruction } from "@/utils/instructionExecutor";
+import assemble from "../../assembler/assembler";
 
 export function Toolbar() {
   // const { isRunning, isHalted, isPaused, setRunning, setHalted, setPaused } = useSimulationStore();
@@ -81,19 +82,19 @@ export function Toolbar() {
 
   const handleRun = async () => {
     const startingAddress = getLoadAddress();
-    // console.log("Starting address:", startingAddress);
-    const response = await fetch("http://localhost:8000/assemble", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        code: sourceCode,
-        start_address: startingAddress,
-      }),
-    });
+    // // console.log("Starting address:", startingAddress);
+    // const response = await fetch("http://localhost:8000/assemble", {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify({
+    //     code: sourceCode,
+    //     start_address: startingAddress,
+    //   }),
+    // });
 
-    const data = await response.json();
+    const data = assemble(sourceCode,startingAddress);
     // console.log(data);
     loadMemoryFromBackend(data.memory);
     setLabels(data.labels);
