@@ -20,6 +20,7 @@ import {
   BugIcon as Debug,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 // import { useSimulationStore } from "@/store/simulationStore";
 import { useCodeStore } from "@/store/codeStore";
 import { useMemoryStore } from "../../store/memoryStore";
@@ -65,6 +66,7 @@ export function Toolbar() {
       });
       if (result.halt) {
         // clearInterval(intervalId);
+        toast.success("Program executed successfully.")
         console.log("Program halted.");
       }
     } while (!result.halt);

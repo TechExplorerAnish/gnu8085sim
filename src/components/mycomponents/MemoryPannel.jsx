@@ -13,6 +13,7 @@ const TOTAL_MEMORY_SIZE = 0xffff - 1;
 
 export function MemoryPanel() {
   const [searchValue, setSearchValue] = useState("");
+  const [dataFormat, setdataFormat] = useState("hex")
   const [startAddress, setStartAddress] = useState(0);
   const { memory, setMemory } = useMemoryStore();
   const [error, setError] = useState("");
@@ -24,22 +25,25 @@ export function MemoryPanel() {
     const endAddress = TOTAL_MEMORY_SIZE + 1;
     if (startAddress + ITEMS_PER_PAGE > TOTAL_MEMORY_SIZE) {
       for (let i = startAddress; i < endAddress; i++) {
-        const memValue = memory[i] || "00h";
+        const memValue = memory[i] || "00";
         // Handle both numeric values and hex strings
-        let displayValue;
-        if (typeof memValue === 'number') {
-          displayValue = memValue.toString(16).toUpperCase().padStart(2, "0") + "h";
-        } else if (typeof memValue === 'string') {
-          // If it already has 'h' suffix, use it as is
-          if (memValue.toUpperCase().endsWith('H')) {
-            displayValue = memValue;
+        let displayValue = memValue;
+        if (dataFormat === "hex") {
+          if (typeof memValue === 'number') {
+            displayValue = memValue.toString(16).toUpperCase().padStart(2, "0") + "h";
+          } else if (typeof memValue === 'string') {
+            // If it already has 'h' suffix, use it as is
+            if (memValue.toUpperCase().endsWith('H')) {
+              displayValue = memValue;
+            } else {
+              // If it's a hex string without 'h', add it
+              displayValue = memValue.toUpperCase().padStart(2, "0") + "h";
+            }
           } else {
-            // If it's a hex string without 'h', add it
-            displayValue = memValue.toUpperCase().padStart(2, "0") + "h";
+            displayValue = "00h";
           }
-        } else {
-          displayValue = "00h";
         }
+
         items.push({
           address: i,
           value: displayValue,
@@ -47,21 +51,24 @@ export function MemoryPanel() {
       }
     } else {
       for (let i = startAddress; i < startAddress + ITEMS_PER_PAGE; i++) {
-        const memValue = memory[i] || "00h";
+        const memValue = memory[i] || "00";
         // Handle both numeric values and hex strings
-        let displayValue;
-        if (typeof memValue === 'number') {
-          displayValue = memValue.toString(16).toUpperCase().padStart(2, "0") + "h";
-        } else if (typeof memValue === 'string') {
-          // If it already has 'h' suffix, use it as is
-          if (memValue.toUpperCase().endsWith('H')) {
-            displayValue = memValue;
+
+        let displayValue = memValue;
+        if (dataFormat === "hex") {
+          if (typeof memValue === 'number') {
+            displayValue = memValue.toString(16).toUpperCase().padStart(2, "0") + "h";
+          } else if (typeof memValue === 'string') {
+            // If it already has 'h' suffix, use it as is
+            if (memValue.toUpperCase().endsWith('H')) {
+              displayValue = memValue;
+            } else {
+              // If it's a hex string without 'h', add it
+              displayValue = memValue.toUpperCase().padStart(2, "0") + "h";
+            }
           } else {
-            // If it's a hex string without 'h', add it
-            displayValue = memValue.toUpperCase().padStart(2, "0") + "h";
+            displayValue = "00h";
           }
-        } else {
-          displayValue = "00h";
         }
         items.push({
           address: i,
@@ -70,8 +77,8 @@ export function MemoryPanel() {
       }
     }
     return items;
-  }, [startAddress, memory]);
-  
+  }, [startAddress, memory, dataFormat]);
+
   const rowVirtualizer = useVirtualizer({
     count: visibleItems.length,
     getScrollElement: () => parentRef.current,
@@ -121,13 +128,13 @@ export function MemoryPanel() {
 
   const handleMemoryChange = (e, address) => {
     const input = e.target.value.trim();
-    
+
     // Update editing state
     setEditingValues(prev => ({
       ...prev,
       [address]: input
     }));
-    
+
     // Validate input length
     if (input.toUpperCase().endsWith("H")) {
       const hexValue = parseInt(input.slice(0, -1), 16);
@@ -158,7 +165,7 @@ export function MemoryPanel() {
         // Store as hex string with 'h' suffix to match the format from Toolbar
         updatedMemory[address] = value.toString(16).toUpperCase().padStart(2, "0") + "h";
         setMemory(updatedMemory);
-        
+
         // Clear editing state for this address
         setEditingValues(prev => {
           const newState = { ...prev };
@@ -223,7 +230,7 @@ export function MemoryPanel() {
         <div className="grid grid-cols-3 rounded-t-lg gap-4 p-3 border-b font-medium text-sm bg-gradient-to-r from-slate-50 to-slate-100 dark:from-gray-800 dark:to-gray-950">
           <div>Address (Hex)</div>
           <div>Address (Dec)</div>
-          <div>Data (Dec)</div>
+          <div className="flex flex-col gap-1 items-center"><span>Data</span> <Button className="rounded-small border-b bg-slate-200 text-sm text-black hover:bg-slate-300 dark:text-white dark:bg-slate-800 dark:hover:bg-slate-900 transition-all" onClick={() => { setdataFormat((prevState) => prevState == "hex" ? "dec" : "hex") }} >{dataFormat}</Button></div>
         </div>
 
         <div ref={parentRef} className="h-[500px] overflow-auto">
@@ -242,7 +249,7 @@ export function MemoryPanel() {
                 <div
                   key={item.address}
                   data-index={virtualItem.index}
-                  className="grid grid-cols-3 gap-4 py-1 text-sm bg-inherit items-center hover:bg-slate-900 transition-colors absolute top-0 left-0 w-full"
+                  className="grid grid-cols-3 gap-4 py-1 text-sm bg-inherit items-center hover:bg-slate-200 dark:hover:bg-slate-900 transition-colors absolute top-0 left-0 w-full"
                   style={{
                     height: `${virtualItem.size}px`,
                     transform: `translateY(${virtualItem.start}px)`
