@@ -27,6 +27,7 @@ import { useMemoryStore } from "../../store/memoryStore";
 import { useRegisterStore } from "../../store/registerStore";
 import { executeInstruction } from "@/utils/instructionExecutor";
 import assemble from "../../assembler/assembler";
+import { use } from "react";
 
 export function Toolbar() {
   // const { isRunning, isHalted, isPaused, setRunning, setHalted, setPaused } = useSimulationStore();
@@ -73,7 +74,7 @@ export function Toolbar() {
     // }, 0);
   };
 
-  const loadMemoryFromBackend = (backendMemory) => {
+  const loadMemory = (backendMemory) => {
     for (const [addrStr, hexVal] of Object.entries(backendMemory)) {
       const addr = parseInt(addrStr);
       const value = parseInt(hexVal, 16);
@@ -84,23 +85,17 @@ export function Toolbar() {
 
   const handleRun = async () => {
     const startingAddress = getLoadAddress();
-    // // console.log("Starting address:", startingAddress);
-    // const response = await fetch("http://localhost:8000/assemble", {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify({
-    //     code: sourceCode,
-    //     start_address: startingAddress,
-    //   }),
-    // });
-
     const data = assemble(sourceCode,startingAddress);
-    // console.log(data);
-    loadMemoryFromBackend(data.memory);
+    loadMemory(data.memory);
     setLabels(data.labels);
   };
+
+  const handleReset = () => {
+    useRegisterStore.getState().resetRegisters();
+    useMemoryStore.getState().resetMemory();
+    
+
+  }       
 
   const ToolButton = ({
     icon: Icon,
@@ -157,6 +152,7 @@ export function Toolbar() {
                 <ToolButton
                   icon={RotateCcw}
                   label="Reset"
+                  onClick={handleReset}
                   color="text-orange-300 dark:text-orange-300"
                 />
                 <ToolButton

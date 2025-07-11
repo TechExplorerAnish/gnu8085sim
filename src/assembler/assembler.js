@@ -4,7 +4,6 @@ export default function assemble(code, starting_address = 0x0000) {
   let pc = starting_address;
   const lines = code.trim().split("\n");
   const labels = pass1(code,starting_address);
-  console.log(labels)
   const memory = {};
   for (let line of lines) {
     line = line.trim().toUpperCase();
@@ -455,7 +454,6 @@ export default function assemble(code, starting_address = 0x0000) {
     }
   }
 
-  console.log(memory,labels);
   return { memory, labels };
 }
 

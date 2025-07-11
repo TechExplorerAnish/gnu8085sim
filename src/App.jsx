@@ -6,8 +6,7 @@ import { Toaster } from "sonner";
 const App = () => {
   return (
     <>
-      <Toaster />
-    
+      <Toaster richColors/>
       <Layout />
     </>
   );

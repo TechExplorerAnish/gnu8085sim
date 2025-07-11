@@ -160,7 +160,6 @@ export function MemoryPanel() {
   const handleMemoryKeyPress = (e, address) => {
     if (e.key === "Enter") {
       const value = parseInputValue(e.target.value);
-      console.log("Parsed value:", value);
       if (value !== null && value >= 0 && value <= 255) {
         const updatedMemory = [...memory];
         // Store as hex string with 'h' suffix to match the format from Toolbar
